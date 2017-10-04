@@ -1,12 +1,13 @@
 '''
 ################################## server.py #############################
-# 
+# Lab1 gRPC RocksDB Server 
 ################################## server.py #############################
 '''
 import time
 import grpc
 import datastore_pb2
 import datastore_pb2_grpc
+import uuid
 import rocksdb
 
 from concurrent import futures
@@ -14,29 +15,19 @@ from concurrent import futures
 _ONE_DAY_IN_SECONDS = 60 * 60 * 24
 
 class MyDatastoreServicer(datastore_pb2.DatastoreServicer):
-    '''
-    '''
-
     def __init__(self):
-        '''
-        '''
-        print("init server")
-        self.db = rocksdb.DB("test.db", rocksdb.Options(create_if_missing=True))
+        self.db = rocksdb.DB("lab1.db", rocksdb.Options(create_if_missing=True))
 
     def put(self, request, context):
-        '''
-        '''
-        print("put {} at {}".format(request.data, request.key))
-        self.db.put(request.key.encode(), request.data.encode())
-        return datastore_pb2.Response(data='success')
+        print("put")
+        key = uuid.uuid4().hex
+        self.db.put(key.encode(), request.data.encode())
+        return datastore_pb2.Response(data=key)
 
     def get(self, request, context):
-        '''
-        '''
-        print("get value at {}".format(request.key))
-        data = self.db.get(request.key.encode())
-        return datastore_pb2.Response(data=data)
-
+        print("get")
+        value = self.db.get(request.data.encode())
+        return datastore_pb2.Response(data=value)
 
 def run(host, port):
     '''
@@ -57,3 +48,4 @@ def run(host, port):
 
 if __name__ == '__main__':
     run('0.0.0.0', 3000)
+
